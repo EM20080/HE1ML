@@ -19,8 +19,39 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\cri\hl_cri_atom_impl.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\cri\hl_cri_audio_cue_sheet.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\hl_guid.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\io\hl_endian_readers.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\io\hl_endian_writers.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\io\hl_reader_base.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\io\hl_writer_base.cpp" />
     <ClCompile Include="..\Dependencies\ini.cpp" />
     <ClCompile Include="..\Dependencies\xxhash.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\cri\hl_cri_aax.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\cri\hl_cri_atom_cue_sheet.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\cri\hl_cri_atom_cue_sheet_aisac_impl.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\cri\hl_cri_atom_cue_sheet_cue_impl.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\cri\hl_cri_atom_cue_sheet_graph_impl.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\cri\hl_cri_atom_cue_sheet_sequence_impl.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\cri\hl_cri_atom_cue_sheet_synth_impl.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\cri\hl_cri_atom_cue_sheet_track_impl.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\cri\hl_cri_atom_cue_sheet_waveform_impl.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\cri\hl_cri_atom_wave_bank.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\cri\hl_cri_packed_file.cpp" />
+    <ClCompile Include="..\Dependencies\HedgeLib\HedgeLib\src\cri\hl_cri_utf.cpp" />
+    <ClCompile Include="..\Dependencies\libRad\src\platform\win32\rad_default_allocator_impl_win32.cpp" />
+    <ClCompile Include="..\Dependencies\libRad\src\platform\win32\rad_file_impl_win32.cpp" />
+    <ClCompile Include="..\Dependencies\libRad\src\platform\win32\rad_path_impl_win32.cpp" />
+    <ClCompile Include="..\Dependencies\libRad\src\platform\win32\rad_wide_path_impl_win32.cpp" />
+    <ClCompile Include="..\Dependencies\libRad\src\rad_memory_impl.cpp" />
+    <ClCompile Include="..\Dependencies\libRad\src\rad_memory_stream.cpp" />
+    <ClCompile Include="..\Dependencies\libRad\src\rad_path_unix.cpp" />
+    <ClCompile Include="..\Dependencies\libRad\src\rad_path_win32.cpp" />
+    <ClCompile Include="..\Dependencies\libRad\src\rad_stream.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Dependencies\HedgeLib\HedgeLib\src\cri\hl_cri_atom_impl.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -78,10 +109,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\Dependencies\HedgeLib\HedgeLib\include;..\Dependencies\libRad\include;..\Dependencies\libRad\include\rad;..\Dependencies\libRad\src\platform\win32;..\Dependencies\unordered_dense\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ForcedIncludeFiles>$(ProjectDir)..\Dependencies\libRad\src\rad_pch_impl.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -93,10 +128,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\Dependencies\HedgeLib\HedgeLib\include;..\Dependencies\libRad\include;..\Dependencies\libRad\include\rad;..\Dependencies\libRad\src\platform\win32;..\Dependencies\unordered_dense\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ForcedIncludeFiles>$(ProjectDir)..\Dependencies\libRad\src\rad_pch_impl.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -110,10 +149,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\Dependencies\HedgeLib\HedgeLib\include;..\Dependencies\libRad\include;..\Dependencies\libRad\include\rad;..\Dependencies\libRad\src\platform\win32;..\Dependencies\unordered_dense\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ForcedIncludeFiles>$(ProjectDir)..\Dependencies\libRad\src\rad_pch_impl.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -129,10 +172,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\Dependencies\HedgeLib\HedgeLib\include;..\Dependencies\libRad\include;..\Dependencies\libRad\include\rad;..\Dependencies\libRad\src\platform\win32;..\Dependencies\unordered_dense\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ForcedIncludeFiles>$(ProjectDir)..\Dependencies\libRad\src\rad_pch_impl.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>

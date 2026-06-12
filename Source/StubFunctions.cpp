@@ -3,6 +3,10 @@
 
 extern "C"
 {
+#ifdef _WIN64
+	// d3d11.dll
+	MAKE_STUB(D3D11CreateDevice);
+#else
 	// d3d9.dll
 	MAKE_STUB(D3DPERF_BeginEvent);
 	MAKE_STUB(D3DPERF_EndEvent);
@@ -24,6 +28,7 @@ extern "C"
 
 	// dinput8.dll
 	MAKE_STUB(DirectInput8Create);
+#endif
 }
 
 void ResolveStubMethods(void* module)

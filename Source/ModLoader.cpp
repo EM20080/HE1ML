@@ -7,7 +7,7 @@
 #include "Mod.h"
 #include <intrin.h>
 
-void D3D9Hooks_Init();
+void D3DHooks_Init();
 void StdOutLogHandler(void* obj, int level, int category, const char* message, size_t p1, size_t p2, const uint32_t* parray)
 {
 	if (category == ML_LOG_CATEGORY_GENERAL)
@@ -106,7 +106,8 @@ void ModLoader::Init(const char* configPath)
 	}
 
 #if !defined(DEBUG)
-	if (stricmp(strtrim(cpkSection["LogType"], "\"").c_str(), "console") == 0)
+	const auto logType = strtrim(cpkSection["LogType"], "\"");
+	if (stricmp(logType.c_str(), "console") == 0 || (g_game->id == eGameID_SonicGenerations2024 && logType.empty()))
 #endif
 	{
 		if (!AttachConsole(ATTACH_PARENT_PROCESS))
@@ -133,7 +134,7 @@ void ModLoader::Init(const char* configPath)
 
 	if (!g_game->EventProc(eGameEvent_InstallUpdateEvent, nullptr))
 	{
-		D3D9Hooks_Init();
+		D3DHooks_Init();
 	}
 }
 

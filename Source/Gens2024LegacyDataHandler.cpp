@@ -1,5 +1,5 @@
 #include <string_view>
-#include <exception> // TODO: Remove me
+#include <list>
 #include <boost/function.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/bind/placeholders.hpp>
@@ -9,6 +9,9 @@
 #include <rad/rad_path.h> // TODO
 #include "Gens2024LegacyAudioUpgrader.h"
 #include "Gens2024LegacyAudioPatcher.h"
+#include "Gens2024LegacyModelReader.h"
+#include "Gens2024LegacyHavokReader.h"
+#include "Gens24LegacyTerrainReader.h"
 #include "CRIWARE/Criware.h"
 #include "Globals.h"
 
@@ -390,13 +393,83 @@ namespace gens2024
 		}
 	}
 
+
+	std::list<legacy_model::Buffer> g_legacyModelBuffers;
+	std::list<legacy_terrain::Buffer> g_legacyTerrainBuffers;
+	std::list<legacy_havok::Buffer> g_legacyHavokBuffers;
+
+	void MakeLegacyModel(
+		std::string type,
+		TypeMakeFunc makeFunc,
+		const Hedgehog::Base::CSharedString& name,
+		void* data,
+		unsigned long dataSize,
+		boost::shared_ptr<Hedgehog::Database::CDatabase>& db)
+	{
+		auto convertedData = legacy_model::Convert(type, data, dataSize);
+
+		if (!convertedData.empty())
+		{
+			g_legacyModelBuffers.push_back(std::move(convertedData));
+			auto& buffer = g_legacyModelBuffers.back();
+			makeFunc(name, buffer.data.get(), buffer.size, db);
+			return;
+		}
+
+		makeFunc(name, data, dataSize, db);
+	}
+
+	void MakeLegacyTerrain(
+		std::string type,
+		TypeMakeFunc makeFunc,
+		const Hedgehog::Base::CSharedString& name,
+		void* data,
+		unsigned long dataSize,
+		boost::shared_ptr<Hedgehog::Database::CDatabase>& db)
+	{
+		auto convertedData = legacy_terrain::Convert(type, name.data, data, dataSize);
+
+		if (!convertedData.empty())
+		{
+			g_legacyTerrainBuffers.push_back(std::move(convertedData));
+			auto& buffer = g_legacyTerrainBuffers.back();
+			makeFunc(name, buffer.data.get(), buffer.size, db);
+			return;
+		}
+
+		makeFunc(name, data, dataSize, db);
+	}
+
+	void MakeLegacyHavok(
+		std::string type,
+		TypeMakeFunc makeFunc,
+		const Hedgehog::Base::CSharedString& name,
+		void* data,
+		unsigned long dataSize,
+		boost::shared_ptr<Hedgehog::Database::CDatabase>& db)
+	{
+		auto convertedData = legacy_havok::Convert(type, data, dataSize);
+
+		if (!convertedData.empty())
+		{
+			g_legacyHavokBuffers.push_back(std::move(convertedData));
+			auto& buffer = g_legacyHavokBuffers.back();
+			makeFunc(name, buffer.data.get(), buffer.size, db);
+			return;
+		}
+
+		if (legacy_havok::BlocksFallback(type, data, dataSize))
+			return;
+
+		makeFunc(name, data, dataSize, db);
+	}
+
 	HOOK(void, __cdecl, RegisterType, nullptr,
 		Hedgehog::Database::CDatabase* thisPtr, Hedgehog::Base::CSharedString& name,
 		TypeMakeFunc makeFunc, TypeCreateFunc createFunc)
 	{
 		if (std::strcmp(name.data, "acb") == 0)
 		{
-			// Also register csb type.
 			Hedgehog::Base::CSharedString csbName("csb");
 
 			LOG("Register type: %s", csbName.data);
@@ -408,9 +481,55 @@ namespace gens2024
 			);
 		}
 
+		std::string type(name.data);
+		TypeMakeFunc finalMakeFunc = makeFunc;
+
+		if (legacy_model::Supports(type))
+		{
+			finalMakeFunc = boost::bind(
+				MakeLegacyModel,
+				type,
+				makeFunc,
+				_1,
+				_2,
+				_3,
+				_4
+			);
+		}
+		else if (legacy_terrain::Supports(type))
+		{
+			finalMakeFunc = boost::bind(
+				MakeLegacyTerrain,
+				type,
+				makeFunc,
+				_1,
+				_2,
+				_3,
+				_4
+			);
+		}
+		else if (legacy_havok::Supports(type))
+		{
+			finalMakeFunc = boost::bind(
+				MakeLegacyHavok,
+				type,
+				makeFunc,
+				_1,
+				_2,
+				_3,
+				_4
+			);
+		}
+
 		LOG("Register type: %s", name.data);
-		originalRegisterType(thisPtr, name, makeFunc, createFunc);
+		originalRegisterType(
+			thisPtr,
+			name,
+			finalMakeFunc,
+			createFunc
+		);
 	}
+
 
 	struct CriAtomPlayerTag
 	{

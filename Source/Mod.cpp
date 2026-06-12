@@ -124,8 +124,19 @@ void Mod::Init(int in_bind_priority)
 			break;
 
 		case eGameID_SonicGenerations2024:
-			BindDirectory("image/x64/generations/", (root / includePath / "generations").string().c_str(), i);
+		{
+			const auto includeRoot = root / includePath;
+			const auto legacyRoot = std::filesystem::is_directory(includeRoot / "disk") ? includeRoot / "disk" : includeRoot;
+
+			// Generations 2024 keeps old CPK contents loose under raw/.
+			BindDirectory("image/x64/generations/raw/", (legacyRoot / "bb").string().c_str(), i * 4);
+			BindDirectory("image/x64/generations/raw/", (legacyRoot / "bb2").string().c_str(), i * 4 + 1);
+			BindDirectory("image/x64/generations/raw/", (legacyRoot / "bb3").string().c_str(), i * 4 + 2);
+
+			// Native 2024 mods can still provide exact loose paths here.
+			BindDirectory("image/x64/generations/", (root / includePath / "generations").string().c_str(), i * 4 + 3);
 			break;
+		}
 
 		default:
 			break;

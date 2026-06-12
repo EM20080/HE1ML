@@ -34,6 +34,11 @@
     <ClInclude Include="Gens2024LegacyAudioACBPatchInfo.inl" />
     <ClInclude Include="Gens2024LegacyAudioPatcher.h" />
     <ClInclude Include="Gens2024LegacyAudioParser.h" />
+    <ClInclude Include="Gens2024LegacyCompressionHandler.h" />
+    <ClInclude Include="Gens2024LegacyDataTypes.h" />
+    <ClInclude Include="Gens2024LegacyHavokReader.h" />
+    <ClInclude Include="Gens2024LegacyModelReader.h" />
+    <ClInclude Include="Gens24LegacyTerrainReader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
@@ -71,6 +76,9 @@
     <ClCompile Include="Gens2024LegacyDataHandler.cpp" />
     <ClCompile Include="Gens2024LegacyAudioPatcher.cpp" />
     <ClCompile Include="Gens2024LegacyAudioParser.cpp" />
+    <ClCompile Include="Gens2024LegacyHavokReader.cpp" />
+    <ClCompile Include="Gens2024LegacyModelReader.cpp" />
+    <ClCompile Include="Gens24LegacyTerrainReader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Dependencies">
