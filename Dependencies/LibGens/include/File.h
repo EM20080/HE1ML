@@ -1,0 +1,218 @@
+//=========================================================================
+//	  Copyright (c) 2016 SonicGLvl
+//
+//    This file is part of SonicGLvl, a community-created free level editor 
+//    for the PC version of Sonic Generations.
+//
+//    SonicGLvl is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+//
+//    SonicGLvl is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+//    
+//
+//    Read AUTHORS.txt, LICENSE.txt and COPYRIGHT.txt for more details.
+//=========================================================================
+
+#pragma once
+
+#include <algorithm>
+#include <cctype>
+
+#define LIBGENS_FILE_H_ERROR_READ_FILE_BEFORE   "Can't open the specified file: "
+#define LIBGENS_FILE_H_ERROR_READ_FILE_AFTER    ". The file doesn't exist, or is currently open by another program."
+#define LIBGENS_FILE_H_ERROR_FILE_CLOSING       "Attempted to close a file with an undefined reference."
+#define LIBGENS_FILE_H_ERROR_FILE_HEADER        "Attempted to read the header of a file with an undefined reference."
+#define LIBGENS_FILE_H_ERROR_FILE_BOOKMARK      "Attempted to go to address on a file with an undefined reference."
+#define LIBGENS_FILE_H_ERROR_FILE_GET_ADDRESS   "Attempted to get address from a file with an undefined reference."
+#define LIBGENS_FILE_H_ERROR_READ_NULL          "Attempted to read variable from file, but the destination is undefined."
+#define LIBGENS_FILE_H_ERROR_READ_FILE_NULL     "Attempted to read variable from an file with an undefined reference."
+
+#define LIBGENS_FILE_HEADER_ROOT_TYPE_ADDRESS           4
+#define LIBGENS_FILE_HEADER_ROOT_NODE_ADDRESS           12
+#define LIBGENS_FILE_HEADER_OFFSET_TABLE_ADDRESS        16
+
+#define LIBGENS_FILE_HEADER_ROOT_ADDRESS_DEFAULT        24
+#define LIBGENS_FILE_HEADER_ROOT_ADDRESS_LOST_WORLD     16
+#define LIBGENS_FILE_HEADER_ROOT_ADDRESS_NEEDLE_ARCHIVE 364
+
+#define LIBGENS_FILE_HEADER_ROOT_TYPE_LOST_WORLD        0x0133054A
+#define LIBGENS_FILE_HEADER_ROOT_TYPE_NEEDLE_ARCHIVE	0x52435631
+
+#define LIBGENS_FILE_STRING_BUFFER                      1024
+
+#define LIBGENS_FILE_READ_TEXT                          "rt"
+#define LIBGENS_FILE_WRITE_TEXT                         "wt"
+#define LIBGENS_FILE_READ_BINARY                        "rb"
+#define LIBGENS_FILE_WRITE_BINARY                       "wb"
+
+#define LIBGENS_FILE_PREFER_DISK_FILE					true
+
+namespace LibGens {
+	class FileImpl;
+
+	class File {
+		protected:
+			FileImpl *file_impl;
+			string name;
+			string path;
+			int root_node_type;
+			int root_node_address;
+			int address_read_count;
+			size_t global_offset;
+			list<size_t> final_address_table;
+			unsigned char *comparison_bytes;
+			unsigned char *comparison_bytes_min;
+			unsigned char *comparison_bytes_max;
+			size_t comparison_size;
+			bool relative_address_mode;
+			bool address_64_bit_mode;
+
+			void init();
+		public:
+			File(string filename, const char* mode, bool prefer_disk_file = false); // DiskFile, read/write
+			File(const void* data, size_t data_size); // ReadOnlyMemoryFile, readonly
+			File(); // MemoryFile, read/write
+			~File();
+
+			void prepareHeader(int root_type);
+			void writeHeader(bool no_extra_foot=false);
+			void readHeader();
+			void setGlobalOffset(size_t v);
+			list<size_t> getAddressTable();
+			void addAddressToTable();
+			void sortAddressTable();
+			void seek(long offset, int origin);
+			void goToAddress(size_t address);
+			void goToEnd();
+			void moveAddress(size_t address);
+			size_t getCurrentAddress();
+			void setRootNodeAddress(size_t v);
+			size_t getRootNodeAddress();
+			void setRootNodeType(size_t v);
+			void set64BitAddressMode(bool v);
+			string getPath();
+			// BE: Big Endian
+			// BEA: Big Endian Address (Offset by Root Node automatically)
+			bool readSafeCheck(void *dest);
+			size_t read(void *dest, size_t sz);
+			void readInt16(unsigned short *dest);
+			void readInt16BE(unsigned short *dest);
+			void readInt32(unsigned int *dest);
+			void readInt32BE(unsigned int *dest);
+			void readInt32(int *dest);
+			void readInt32A(size_t *dest);
+			void readInt32BE(int *dest);
+			void readInt32BEA(size_t *dest);
+#ifdef _WIN64
+			void readInt32(size_t *dest) { readInt32A(dest); }
+			void readInt32BE(size_t *dest);
+			void readInt32A(unsigned int *dest) { size_t tmp; readInt32A(&tmp); *dest = (unsigned int)tmp; }
+			void readInt32BEA(unsigned int *dest) { size_t tmp; readInt32BEA(&tmp); *dest = (unsigned int)tmp; }
+#endif
+			void readFloat8(float *dest);
+			void readFloat16(float *dest);
+			void readFloat16BE(float *dest);
+			void readFloat32(float *dest);
+			void readFloat32BE(float *dest);
+			void readUChar(unsigned char *dest);
+			void readString(string *dest);
+			void readString(string *dest, size_t n);
+			void readInt16E(unsigned short *dest, bool big_endian);
+			void readInt32E(int *dest, bool big_endian);
+			void readInt32E(unsigned int *dest, bool big_endian);
+			void readInt32EA(size_t *dest, bool big_endian);
+			void readFloat16E(float *dest, bool big_endian);
+			void readFloat32E(float *dest, bool big_endian);
+			bool readLine(string *dest);
+			size_t write(void *dest, size_t sz);
+			void writeString(const char *dest);
+			void writeString(string *dest);
+			void writeUChar(unsigned char *dest);
+			void writeInt16(unsigned short *dest); 
+			void writeInt16BE(unsigned short *dest);
+			void writeInt32(unsigned int *dest);
+			void writeInt32A(size_t *dest, bool add_to_table=true);
+			void writeInt32BE(unsigned int *dest);
+			void writeInt32BE(int *dest);
+			void writeInt32BEA(size_t *dest);
+#ifdef _WIN64
+			void writeInt32(size_t *dest) { writeInt32A(dest, false); }
+			void writeInt32BE(size_t *dest);
+			void writeInt32A(unsigned int *dest, bool add_to_table=true) { size_t tmp = *dest; writeInt32A(&tmp, add_to_table); }
+			void writeInt32BEA(unsigned int *dest) { size_t tmp = *dest; writeInt32BEA(&tmp); }
+#endif
+			void writeFloat8(float *dest);
+			void writeFloat16(float* dest);
+			void writeFloat16BE(float* dest);
+			void writeFloat32(float *dest);
+			void writeFloat32BE(float *dest);
+			void writeNull(size_t size);
+			void writeFloat32E(float *dest, bool big_endian);
+			void readAddressTableBBIN(size_t table_size);
+			void writeAddressTableBBIN(size_t negative_offset=0);
+			size_t writeNullAddress();
+			size_t writeNullAddressTable(size_t count);
+
+			size_t fixPadding(size_t multiple=4);
+			size_t fixPaddingRead(size_t multiple=4);
+			size_t getFileSize();
+
+			int getAddressReadCount();
+			int getRootNodeType();
+
+			bool get64BitAddressMode() const;
+			int getAddressSize() const;
+
+			vector<unsigned char> detach();
+
+			// Reverse-Engineering functions, just to track down what some values could be by printing their minimum and maximum values
+			void createComparison(size_t sz);
+			void readComparison();
+			void printComparisonResults();
+			void deleteComparison();
+
+			int endOfFile();
+			bool valid();
+			bool compare(File *file);
+			void close();
+			void clone(string dest);
+
+			static bool check(string filename);
+			static string extensionFromFilename(string filename);
+			static string nameFromFilename(string filename);
+			static string nameFromFilenameNoExtension(string filename);
+			static string folderFromFilename(string filename);
+			static void rename(string old_filename, string new_filename);
+			static void remove(string filename);
+
+			static string toLower(string s) {
+				std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
+				return s;
+			}
+			static bool endsWithNoCase(const string& s, const string& suffix) {
+				if (s.size() < suffix.size()) return false;
+				return std::equal(suffix.rbegin(), suffix.rend(), s.rbegin(),
+					[](unsigned char a, unsigned char b) { return std::tolower(a) == std::tolower(b); });
+			}
+
+			static string normalizePath(const string& path) {
+				string result;
+				result.reserve(path.size());
+				for (char c : path) {
+					result += (c == '\\') ? '/' : static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+				}
+				return result;
+			}
+
+			static void addMemoryFile(const string& name, vector<unsigned char>&& data, const string& root, bool overwrite);
+			static void clearMemoryFilesForRoot(const string& root);
+			static const vector<unsigned char>* getMemoryFileData(const string& path);
+			static void listMemoryEntries(const string& source_root, vector<string>& out, const string& extension = "");
+	};
+
+	
+};

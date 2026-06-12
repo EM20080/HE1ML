@@ -1,0 +1,338 @@
+/*  Havok Format Library
+    Copyright(C) 2016-2026 Lukas Cone
+
+    This program is free software : you can redistribute it and / or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+#include "hk_base.hpp"
+#include "spike/type/matrix44.hpp"
+#include "spike/uni/virtual_iterator.hpp"
+
+struct hkpPhysicsSystem;
+struct hkpRigidBody;
+struct hkpShape;
+struct hkpSampledHeightFieldShape;
+struct hkpMoppCode;
+struct hkpStaticCompoundShape;
+struct hkpStorageExtendedMeshShapeMeshSubpartStorage;
+struct hkpStorageExtendedMeshShapeShapeSubpartStorage;
+
+struct hkpRigidBodyProperty {
+  uint32 key{};
+  uint32 alignmentPadding{};
+  uint64 data{};
+};
+
+struct hkpPhysicsData : IhkVirtualClass {
+  DECLARE_HKCLASS(hkpPhysicsData)
+
+  virtual size_t GetNumSystems() const = 0;
+  virtual const hkpPhysicsSystem *GetSystem(size_t id) const = 0;
+
+  typedef uni::VirtualIteratorProxy<hkpPhysicsData,
+                                    &hkpPhysicsData::GetNumSystems,
+                                    const hkpPhysicsSystem *,
+                                    &hkpPhysicsData::GetSystem>
+      iteratorSystems;
+  const iteratorSystems Systems() const { return iteratorSystems(this); }
+};
+
+struct hkpPhysicsSystem : IhkVirtualClass {
+  DECLARE_HKCLASS(hkpPhysicsSystem)
+
+  virtual std::string_view GetName() const = 0;
+  virtual bool GetActive() const = 0;
+  virtual size_t GetNumRigidBodies() const = 0;
+  virtual const hkpRigidBody *GetRigidBody(size_t id) const = 0;
+
+  typedef uni::VirtualIteratorProxy<hkpPhysicsSystem,
+                                    &hkpPhysicsSystem::GetNumRigidBodies,
+                                    const hkpRigidBody *,
+                                    &hkpPhysicsSystem::GetRigidBody>
+      iteratorRigidBodies;
+  const iteratorRigidBodies RigidBodies() const {
+    return iteratorRigidBodies(this);
+  }
+};
+
+struct hkpRigidBody : IhkVirtualClass {
+  DECLARE_HKCLASS(hkpRigidBody)
+
+  virtual std::string_view GetName() const = 0;
+  virtual uint32 GetShapeKey() const = 0;
+  virtual uint32 GetCollisionFilterInfo() const = 0;
+  virtual uint8 GetObjectQualityType() const = 0;
+  virtual uint8 GetMotionType() const = 0;
+  virtual uint8 GetMaterialResponseType() const = 0;
+  virtual float GetMaterialFriction() const = 0;
+  virtual float GetMaterialRestitution() const = 0;
+  virtual size_t GetNumProperties() const = 0;
+  virtual hkpRigidBodyProperty GetProperty(size_t id) const = 0;
+  virtual es::Matrix44 GetTransform() const = 0;
+  virtual Vector4A16 GetCenterOfMassLocal() const {
+    return Vector4A16(0.0f, 0.0f, 0.0f, 0.0f);
+  }
+  virtual Vector4A16 GetCenterOfMassWorld() const {
+    return Vector4A16(0.0f, 0.0f, 0.0f, 0.0f);
+  }
+  virtual Vector4A16 GetRotation() const {
+    return Vector4A16(0.0f, 0.0f, 0.0f, 1.0f);
+  }
+  virtual Vector4A16 GetInertiaAndMassInv() const {
+    return Vector4A16(0.0f, 0.0f, 0.0f, 0.0f);
+  }
+  virtual Vector4A16 GetLinearVelocity() const {
+    return Vector4A16(0.0f, 0.0f, 0.0f, 0.0f);
+  }
+  virtual Vector4A16 GetAngularVelocity() const {
+    return Vector4A16(0.0f, 0.0f, 0.0f, 0.0f);
+  }
+  virtual float GetMotionObjectRadius() const { return 0.0f; }
+  virtual float GetLinearDamping() const { return 0.0f; }
+  virtual float GetAngularDamping() const { return 0.0f; }
+  virtual float GetTimeFactor() const { return 1.0f; }
+  virtual float GetGravityFactor() const { return 1.0f; }
+  virtual uint8 GetDeactivationIntegrateCounter() const {
+    return GetMotionType() == 5 ? 0 : 15;
+  }
+  virtual uint16 GetDeactivationNumInactiveFrames(size_t id) const {
+    return GetMotionType() == 5 || id > 1 ? 0 : 0xc000;
+  }
+  virtual uint8 GetMaxLinearVelocity() const {
+    return GetMotionType() == 5 ? 0 : 127;
+  }
+  virtual uint8 GetMaxAngularVelocity() const {
+    return GetMotionType() == 5 ? 0 : 127;
+  }
+  virtual uint8 GetDeactivationClass() const {
+    return GetMotionType() == 5 ? 0 : 2;
+  }
+  virtual uint16 GetSavedQualityTypeIndex() const { return 0; }
+  virtual const hkpShape *GetShape() const = 0;
+};
+
+struct hkpShape : IhkVirtualClass {
+  DECLARE_HKCLASS(hkpShape)
+  virtual uint32 GetShapeType() const = 0;
+};
+
+struct hkpSampledHeightFieldShape : hkpShape {
+  DECLARE_HKCLASS(hkpSampledHeightFieldShape)
+
+  virtual uint32 GetXRes() const = 0;
+  virtual uint32 GetZRes() const = 0;
+  virtual float GetHeightCenter() const = 0;
+  virtual bool GetUseProjectionBasedHeight() const = 0;
+  virtual Vector4A16 GetIntToFloatScale() const = 0;
+  virtual Vector4A16 GetFloatToIntScale() const = 0;
+  virtual Vector4A16 GetFloatToIntOffsetFloorCorrected() const = 0;
+  virtual Vector4A16 GetExtents() const = 0;
+  virtual bool GetTriangleFlip() const = 0;
+  virtual size_t GetNumHeights() const = 0;
+  virtual float GetHeight(size_t id) const = 0;
+};
+
+struct hkpStorageSampledHeightFieldShape : hkpSampledHeightFieldShape {
+  DECLARE_HKCLASS(hkpStorageSampledHeightFieldShape)
+
+  virtual const float *GetStorage() const = 0;
+};
+
+struct hkpCompressedSampledHeightFieldShape : hkpSampledHeightFieldShape {
+  DECLARE_HKCLASS(hkpCompressedSampledHeightFieldShape)
+
+  virtual const uint16 *GetStorage() const = 0;
+  virtual float GetOffset() const = 0;
+  virtual float GetScale() const = 0;
+};
+
+struct hkpTriSampledHeightFieldCollection : hkpShape {
+  DECLARE_HKCLASS(hkpTriSampledHeightFieldCollection)
+
+  virtual bool GetDisableWelding() const = 0;
+  virtual const hkpSampledHeightFieldShape *GetHeightField() const = 0;
+  virtual float GetRadius() const = 0;
+};
+
+struct hkpTriSampledHeightFieldBvTreeShape : hkpShape {
+  DECLARE_HKCLASS(hkpTriSampledHeightFieldBvTreeShape)
+
+  virtual const hkpTriSampledHeightFieldCollection *GetChildShape() const = 0;
+  virtual bool GetWantAabbRejectionTest() const = 0;
+};
+
+struct hkpMoppCode : IhkVirtualClass {
+  DECLARE_HKCLASS(hkpMoppCode)
+
+  virtual const Vector4A16 &GetOffset() const = 0;
+  virtual size_t GetDataSize() const = 0;
+  virtual const uint8 *GetData() const = 0;
+  virtual uint8 GetBuildType() const { return 1; }
+};
+
+struct hkpMoppBvTreeShape : hkpShape {
+  DECLARE_HKCLASS(hkpMoppBvTreeShape)
+
+  virtual const hkpMoppCode *GetCode() const = 0;
+  virtual const hkpShape *GetChildShape() const = 0;
+};
+
+struct hkpStaticCompoundShapeInstance {
+  const hkpShape *shape{};
+  Vector4A16 translation{};
+  Vector4A16 rotation{0.0f, 0.0f, 0.0f, 1.0f};
+  Vector4A16 scale{1.0f, 1.0f, 1.0f, 0.0f};
+  uint32 filterInfo{};
+  uint32 childFilterInfoMask{0xffffffffu};
+  uint32 userData{};
+};
+
+struct hkpStaticCompoundShape : hkpShape {
+  DECLARE_HKCLASS(hkpStaticCompoundShape)
+
+  virtual size_t GetNumInstances() const = 0;
+  virtual hkpStaticCompoundShapeInstance GetInstance(size_t id) const = 0;
+};
+
+struct hkpStorageExtendedMeshShape : hkpShape {
+  DECLARE_HKCLASS(hkpStorageExtendedMeshShape)
+
+  virtual size_t GetNumMeshSubparts() const = 0;
+  virtual const hkpStorageExtendedMeshShapeMeshSubpartStorage *
+  GetMeshSubpart(size_t id) const = 0;
+  virtual size_t GetNumShapeSubparts() const = 0;
+  virtual const hkpStorageExtendedMeshShapeShapeSubpartStorage *
+  GetShapeSubpart(size_t id) const = 0;
+  virtual uint32 GetShapeSubpartFlags(size_t) const { return 0; }
+  virtual size_t GetNumWeldingInfo() const { return 0; }
+  virtual uint16 GetWeldingInfo(size_t) const { return 0; }
+  virtual Vector4A16 GetAabbHalfExtents() const {
+    return Vector4A16(0.0f, 0.0f, 0.0f, 0.0f);
+  }
+  virtual Vector4A16 GetAabbCenter() const {
+    return Vector4A16(0.0f, 0.0f, 0.0f, 0.0f);
+  }
+  virtual uint32 GetCachedNumChildShapes() const { return 0; }
+
+  typedef uni::VirtualIteratorProxy<
+      hkpStorageExtendedMeshShape, &hkpStorageExtendedMeshShape::GetNumMeshSubparts,
+      const hkpStorageExtendedMeshShapeMeshSubpartStorage *,
+      &hkpStorageExtendedMeshShape::GetMeshSubpart>
+      iteratorMeshSubparts;
+  typedef uni::VirtualIteratorProxy<
+      hkpStorageExtendedMeshShape,
+      &hkpStorageExtendedMeshShape::GetNumShapeSubparts,
+      const hkpStorageExtendedMeshShapeShapeSubpartStorage *,
+      &hkpStorageExtendedMeshShape::GetShapeSubpart>
+      iteratorShapeSubparts;
+
+  const iteratorMeshSubparts MeshSubparts() const {
+    return iteratorMeshSubparts(this);
+  }
+  const iteratorShapeSubparts ShapeSubparts() const {
+    return iteratorShapeSubparts(this);
+  }
+};
+
+struct hkpStorageExtendedMeshShapeMeshSubpartStorage : IhkVirtualClass {
+  DECLARE_HKCLASS(hkpStorageExtendedMeshShapeMeshSubpartStorage)
+
+  virtual size_t GetNumVertices() const = 0;
+  virtual const Vector4A16 *GetVertices() const = 0;
+  virtual size_t GetNumIndices8() const = 0;
+  virtual const uint8 *GetIndices8() const = 0;
+  virtual size_t GetNumIndices16() const = 0;
+  virtual const uint16 *GetIndices16() const = 0;
+  virtual size_t GetNumIndices32() const = 0;
+  virtual const uint32 *GetIndices32() const = 0;
+  virtual size_t GetNumTriangles() const = 0;
+  virtual bool GetTriangleIndices(size_t id, uint32 &a, uint32 &b,
+                                  uint32 &c) const = 0;
+};
+
+struct hkpStorageExtendedMeshShapeShapeSubpartStorage : IhkVirtualClass {
+  DECLARE_HKCLASS(hkpStorageExtendedMeshShapeShapeSubpartStorage)
+
+  virtual size_t GetNumShapes() const = 0;
+  virtual const hkpShape *GetShape(size_t id) const = 0;
+
+  typedef uni::VirtualIteratorProxy<
+      hkpStorageExtendedMeshShapeShapeSubpartStorage,
+      &hkpStorageExtendedMeshShapeShapeSubpartStorage::GetNumShapes,
+      const hkpShape *,
+      &hkpStorageExtendedMeshShapeShapeSubpartStorage::GetShape>
+      iteratorShapes;
+  const iteratorShapes Shapes() const { return iteratorShapes(this); }
+};
+
+struct hkpListShape : hkpShape {
+  DECLARE_HKCLASS(hkpListShape)
+
+  virtual size_t GetNumChildren() const = 0;
+  virtual const hkpShape *GetChild(size_t id) const = 0;
+  virtual Vector4A16 GetAabbHalfExtents() const {
+    return Vector4A16(0.0f, 0.0f, 0.0f, 0.0f);
+  }
+  virtual Vector4A16 GetAabbCenter() const {
+    return Vector4A16(0.0f, 0.0f, 0.0f, 0.0f);
+  }
+
+  typedef uni::VirtualIteratorProxy<hkpListShape, &hkpListShape::GetNumChildren,
+                                    const hkpShape *, &hkpListShape::GetChild>
+      iteratorChildren;
+  const iteratorChildren Children() const { return iteratorChildren(this); }
+};
+
+struct hkpConvexTransformShape : hkpShape {
+  DECLARE_HKCLASS(hkpConvexTransformShape)
+
+  virtual float GetRadius() const { return 0.005f; }
+  virtual const hkpShape *GetChildShape() const = 0;
+  virtual es::Matrix44 GetTransform() const = 0;
+};
+
+struct hkpConvexTranslateShape : hkpShape {
+  DECLARE_HKCLASS(hkpConvexTranslateShape)
+
+  virtual float GetRadius() const { return 0.005f; }
+  virtual const hkpShape *GetChildShape() const = 0;
+  virtual Vector4A16 GetTranslation() const = 0;
+};
+
+struct hkpBoxShape : hkpShape {
+  DECLARE_HKCLASS(hkpBoxShape)
+  virtual float GetRadius() const = 0;
+  virtual Vector4A16 GetHalfExtents() const = 0;
+};
+
+struct hkpCylinderShape : hkpShape {
+  DECLARE_HKCLASS(hkpCylinderShape)
+
+  virtual float GetRadius() const = 0;
+  virtual Vector4A16 GetVertexA() const = 0;
+  virtual Vector4A16 GetVertexB() const = 0;
+};
+
+struct hkpConvexVerticesShape : hkpShape {
+  DECLARE_HKCLASS(hkpConvexVerticesShape)
+
+  virtual float GetRadius() const = 0;
+  virtual Vector4A16 GetAabbHalfExtents() const = 0;
+  virtual Vector4A16 GetAabbCenter() const = 0;
+  virtual size_t GetNumVertices() const = 0;
+  virtual bool GetVertex(size_t id, Vector4A16 &out) const = 0;
+  virtual size_t GetNumPlaneEquations() const = 0;
+  virtual const Vector4A16 *GetPlaneEquations() const = 0;
+};
