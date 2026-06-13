@@ -37,8 +37,6 @@ struct HK_EXTERN IhkPackFile {
   const IhkVirtualClass *GetClass(const void *ptr);
 
   static Ptr Create(const std::string &fileName);
-  static Ptr CreateXML(const std::string &fileName);
-  static Ptr CreateXML(const void *data, size_t dataSize);
   static Ptr Create(BinReaderRef_e rd);
   static Ptr Create(BinReaderRef_e rd, IhkPackFile *compendium);
 
@@ -48,4 +46,6 @@ struct HK_EXTERN IhkPackFile {
   // rule must be as hex, ie. 0x4101
   void ToPackFile(const std::string &fileName, hkToolset toolset, uint32 rule);
   std::vector<uint8> ToPackFile(hkToolset toolset, uint32 rule);
+  void ToFormatNewXML(const std::string &fileName);
+  std::string ToFormatNewXML();
 };

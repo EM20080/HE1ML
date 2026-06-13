@@ -18,15 +18,4 @@
 #pragma once
 #include "hk_base.hpp"
 
-struct hkaMeshBinding : IhkVirtualClass {
-  DECLARE_HKCLASS(hkaMeshBinding)
-
-  virtual const char *OriginalSkeletonName() const { return ""; }
-  virtual const char *Name() const { return ""; }
-  virtual const IhkVirtualClass *Mesh() const { return nullptr; }
-  virtual const hkaSkeleton *Skeleton() const { return nullptr; }
-  virtual size_t GetNumBoneFromSkinMeshTransforms() const { return 0; }
-  virtual const float *GetBoneFromSkinMeshTransform(size_t) const {
-    return nullptr;
-  }
-};
+struct hkaMeshBinding : IhkVirtualClass {};
